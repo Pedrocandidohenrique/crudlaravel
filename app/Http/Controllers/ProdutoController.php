@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Produto;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
+use Illuminate\View\View;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class ProdutoController extends Controller
 {
@@ -12,7 +16,9 @@ class ProdutoController extends Controller
      */
     public function index()
     {
-        //
+        $produtos = Produto::latest()->paginate(5);
+        return view('produtos.index',compact('produtos'))
+            ->with('i',(request()->input('page',1)-1)*5);
     }
 
     /**
@@ -20,7 +26,7 @@ class ProdutoController extends Controller
      */
     public function create()
     {
-        //
+        return view('produtos.create');
     }
 
     /**
@@ -28,7 +34,17 @@ class ProdutoController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'descricao' => 'required',
+            'qtd' => 'required',
+            'precoUnitario' => 'required',
+            'precoVenda' => 'required',
+        ]);
+
+        Produto::create($request->all());
+
+        return redirect()->route('produtos.index')
+                        ->with('success','Produto criado com sucesso.');
     }
 
     /**
@@ -36,7 +52,7 @@ class ProdutoController extends Controller
      */
     public function show(Produto $produto)
     {
-        //
+        return view('produtos.show',compact('produto'));
     }
 
     /**
@@ -44,15 +60,24 @@ class ProdutoController extends Controller
      */
     public function edit(Produto $produto)
     {
-        //
-    }
+        return view('produtos.edit',compact('produto'));    }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Produto $produto)
     {
-        //
+        $request->validate([
+            'descricao' => 'required',
+            'qtd' => 'required',
+            'precoUnitario' => 'required',
+            'precoVenda' => 'required',
+        ]);
+
+        $produto->update($request->all());
+
+        return redirect()->route('produtos.index')
+                        ->with('success','Produto atualizado com sucesso.');    
     }
 
     /**
@@ -60,6 +85,9 @@ class ProdutoController extends Controller
      */
     public function destroy(Produto $produto)
     {
-        //
+        $produto->delete();
+
+        return redirect()->route('produtos.index')
+                        ->with('success','Produto excluído com sucesso.');
     }
 }
